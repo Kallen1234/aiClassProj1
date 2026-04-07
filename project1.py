@@ -81,6 +81,19 @@ def allocate_ops_to_machines(job_sequence, proc_times, M):
     return schedule
 
 
+def compMakespan(schedule):
+        makespan = 0
+        for machine in schedule:
+            if machine:
+                lastEnd = machine[-1][1]
+
+                if lastEnd > makespan:
+                    makespan = lastEnd
+                
+        return makespan
+        
+
+
 #for simulated annealing algorithm
 def simAnneal():
     pass
