@@ -157,24 +157,70 @@ def simAnneal(initial_sequence, proc_times, M):
                 current_makespan = next_makespan
 
         iteration += 1
-    
+
+def perms(jobs):
+    if len(jobs) == 1:
+        return [jobs]
+    allO = []
+
+    for i in range(len(jobs)):
+        picked = jobs[i]
+
+        remain = jobs[:i] + jobs[i+1:]
+        for O in perms(remain):
+            allO.append([picked] + O)
+    return allO
+
+#R4. Random large instance (more machines than ops/job)
+def r4():
+    random.seed(42)
+    proc_timesR4 = [[random.randint(5,50) for _ in range(3)] for _ in range(50)]
+    init_secR4 = list(range(50))
+
+    random.shuffle(init_secR4)
+    init_makespanR4 = compMakespan(allocate_ops_to_machines(init_secR4,proc_timesR4,5))
+    saS4,saMakeS4 = simAnneal(init_secR4, proc_timesR4, 5)
+    pctR4 = ((init_makespanR4 - saMakeS4) / init_makespanR4) * 100
+    print("R4 init: ", init_makespanR4, "r4 SA: ", saMakeS4, "Improved ---> ", round(pctR4,1) )
+
+#these are almost identical 
+#R5. Random large instance (more ops/job than machines)
+def r5():
+    random.seed(42)
+    proc_timesR5 = [[random.randint(5,50) for _ in range(5)] for _ in range(50)]
+    init_secR5 = list(range(50))
+
+    random.shuffle(init_secR5)
+    init_makespanR5 = compMakespan(allocate_ops_to_machines(init_secR5,proc_timesR5,3))
+    saS5,saMakeS5 = simAnneal(init_secR5, proc_timesR5, 3)
+    pctR5 = ((init_makespanR5 - saMakeS5) / init_makespanR5) * 100
+    print("R5 init: ", init_makespanR5, "r5 SA: ", saMakeS5, "Improved ---> ", round(pctR5,1)," %")
 
 
-
-#just for testing
-sequence = [0, 1, 2]
+#Data should be right i think 
 proc_times = [
-    [1, 4, 5, 6],
-    [3, 5, 4, 1],
-    [4, 5, 2, 7]
+    [5, 2, 7, 4],  # the 6 jobs :)
+    [3, 6, 2, 5],  
+    [4, 5, 3, 6],  
+    [2, 4, 6, 3],  
+    [7, 3, 5, 2],  
+    [6, 7, 4, 5],  
 ]
-
-M = 3
-J = len(sequence)
+sequence = list(range(6))
+M = 4
+J = 6
 N = 4
+mOptimal = float('inf')
+for perm in perms(list(range(6))):
+    mksp = compMakespan(allocate_ops_to_machines(perm, proc_times, M))
+    if mksp < mOptimal:
+        mOptimal =mksp
 
 
 schedule, makespan = simAnneal(sequence, proc_times, M)
 
-print("Final makespan:", makespan)
+print("Final makespan:", makespan, "Optimal: ", mOptimal)
+print()
 print("Final schedule:", schedule)
+r4()
+r5()
