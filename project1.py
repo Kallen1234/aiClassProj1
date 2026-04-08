@@ -1,12 +1,28 @@
 import random
+import math
 
-#neighbor function -> generates job sequence
-def generateJobSeq():
-    pass
+#neighbor function -> generates job sequence using swap method
+def generateJobSeq(job_sequence):
+    #generate list of allowed indexes to swap -> avoid duplicate indexes
+    allowed = [ind for ind in range(len(job_sequence))]
 
-#decreases time per simulated annealing iteration
-def timeSchedule():
-    pass
+    #generate two random indexes to swap
+    ind1 = random.choice(allowed)
+    allowed.pop(ind1)
+    ind2 = random.choice(allowed)
+
+    #perform job swap between ind1 & ind2
+    job1 = job_sequence[ind1]
+    job2 = job_sequence[ind2]
+
+    job_sequence[ind1] = job2
+    job_sequence[ind2] = job1
+
+    return job_sequence
+
+#decreases time per simulated annealing iteration using exponential cooling
+def timeSchedule(temp, it):
+    return temp * (0.85 ** it)
 
 
 #creates a job schedule
@@ -32,8 +48,8 @@ def allocate_ops_to_machines(job_sequence, proc_times, M):
         op_index = unsched_index
 
         #obtain machine mapping index & current operation processing time
-        m = op_index % M
-        print(m)
+        #changed op_index to i so it will map to all machines even if J < M
+        m = i % M
         proc = proc_times[job_index][op_index]
 
         #if machine empty, start time = 0
@@ -81,6 +97,7 @@ def allocate_ops_to_machines(job_sequence, proc_times, M):
     return schedule
 
 
+#finds makespan of current job schedule
 def compMakespan(schedule):
         makespan = 0
         for machine in schedule:
@@ -95,5 +112,69 @@ def compMakespan(schedule):
 
 
 #for simulated annealing algorithm
-def simAnneal():
-    pass
+def simAnneal(initial_sequence, proc_times, M):
+    #lower temp -> find the current best solution over more iterations for exploration
+    temp = 5
+    iteration = 0
+
+    #get initial makespan of job sequence
+    current_sequence = initial_sequence
+    current_schedule = allocate_ops_to_machines(current_sequence, proc_times, M)
+    current_makespan = compMakespan(current_schedule)
+
+    #simulated annealing -> iterate until time runs out
+    while True:
+        temp = timeSchedule(temp, iteration)
+
+        if temp <= 0:
+            return current_schedule, current_makespan
+
+        #get neighbor/next states
+        next_sequence = generateJobSeq(current_sequence)
+        next_schedule = allocate_ops_to_machines(next_sequence, proc_times, M)
+        next_makespan = compMakespan(next_schedule)
+
+        #find change: improvement of current state or not
+        makespan_change = next_makespan - current_makespan
+
+        #if next state/schedule is better than current (smaller makespan), just accept it
+        if makespan_change < 0:
+            current_sequence = next_sequence
+            current_schedule = next_schedule
+            current_makespan = next_makespan
+        else:
+            #calculate acceptance probability. avoid integer division
+            #needed to make the makespan change negative as small positive int / very small float = overflow error
+            acceptance_prob = math.exp(float(-1 * makespan_change)/float(temp))
+            #get random value for deciding whether to accept worse condition
+            random_val = random.random()
+
+            #accept worse condition if random value < probability
+            #else, maintain current values
+            if random_val < acceptance_prob:
+                current_sequence = next_sequence
+                current_schedule = next_schedule
+                current_makespan = next_makespan
+
+        iteration += 1
+    
+
+
+
+#just for testing
+sequence = [0, 1, 2]
+proc_times = [
+    [1, 4, 5, 6],
+    [3, 5, 4, 1],
+    [4, 5, 2, 7]
+]
+
+M = 3
+J = len(sequence)
+N = 4
+
+
+schedule, makespan = simAnneal(sequence, proc_times, M)
+
+print("Final makespan:", makespan)
+print("Final schedule:", schedule)
