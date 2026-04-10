@@ -157,7 +157,7 @@ def simAnneal(initial_sequence, proc_times, M):
                 current_makespan = next_makespan
 
         iteration += 1
-
+#this is the brute force for optimality 
 def perms(jobs):
     if len(jobs) == 1:
         return [jobs]
@@ -181,7 +181,7 @@ def r4():
     init_makespanR4 = compMakespan(allocate_ops_to_machines(init_secR4,proc_timesR4,5))
     saS4,saMakeS4 = simAnneal(init_secR4, proc_timesR4, 5)
     pctR4 = ((init_makespanR4 - saMakeS4) / init_makespanR4) * 100
-    print("R4 init: ", init_makespanR4, "r4 SA: ", saMakeS4, "Improved ---> ", round(pctR4,1) )
+    print("R4 init: ", init_makespanR4, "| R4 SA: ", saMakeS4, "| Improved ---> ", round(pctR4,1), "%" )
 
 #these are almost identical 
 #R5. Random large instance (more ops/job than machines)
@@ -194,7 +194,7 @@ def r5():
     init_makespanR5 = compMakespan(allocate_ops_to_machines(init_secR5,proc_timesR5,3))
     saS5,saMakeS5 = simAnneal(init_secR5, proc_timesR5, 3)
     pctR5 = ((init_makespanR5 - saMakeS5) / init_makespanR5) * 100
-    print("R5 init: ", init_makespanR5, "r5 SA: ", saMakeS5, "Improved ---> ", round(pctR5,1)," %")
+    print("R5 init: ", init_makespanR5, "| R5 SA: ", saMakeS5, "| Improved ---> ", round(pctR5,1),"%")
 
 
 #Data should be right i think 
@@ -219,8 +219,8 @@ for perm in perms(list(range(6))):
 
 schedule, makespan = simAnneal(sequence, proc_times, M)
 
-print("Final makespan:", makespan, "Optimal: ", mOptimal)
+print("Final makespan:", makespan, "| Optimal: ", mOptimal)
 print()
-print("Final schedule:", schedule)
+print("Final schedule:", schedule, "\n")
 r4()
 r5()
